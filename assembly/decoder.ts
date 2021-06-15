@@ -82,7 +82,7 @@ export class Decoder {
     return this.decoder.readMapSize().unwrap();
   }
 
-  readArray<T>(fn: (decoder: Decoder) => T): Array<T> {
+  readArray<T>(fn: (decoder: Decoder, i?: u32) => T): Array<T> {
     const size = this.readArraySize();
     let a = new Array<T>();
     for (let i: u32 = 0; i < size; i++) {
@@ -92,25 +92,25 @@ export class Decoder {
     return a;
   }
 
-  readNullableArray<T>(fn: (decoder: Decoder) => T): Array<T> | null {
+  readNullableArray<T>(fn: (decoder: Decoder, i?: u32) => T): Array<T> | null {
     if (this.isNextNil()) {
       return null;
     }
     return this.readArray(fn);
   }
 
-  readMap<K, V>(keyFn: (decoder: Decoder) => K, valueFn: (decoder: Decoder) => V): Map<K, V> {
+  readMap<K, V>(keyFn: (decoder: Decoder, i?: u32) => K, valueFn: (decoder: Decoder, i?: u32) => V): Map<K, V> {
     const size = this.readMapSize();
     let m = new Map<K, V>();
     for (let i: u32 = 0; i < size; i++) {
-      const key = keyFn(this);
-      const value = valueFn(this);
+      const key = keyFn(this, i);
+      const value = valueFn(this, i);
       m.set(key, value);
     }
     return m;
   }
 
-  readNullableMap<K, V>(keyFn: (decoder: Decoder) => K, valueFn: (decoder: Decoder) => V): Map<K, V> | null {
+  readNullableMap<K, V>(keyFn: (decoder: Decoder, i?: u32) => K, valueFn: (decoder: Decoder, i?: u32) => V): Map<K, V> | null {
     if (this.isNextNil()) {
       return null;
     }
@@ -617,7 +617,7 @@ export class SafeDecoder {
     return objectsToDiscard;
   }
 
-  readArray<T>(fn: (decoder: SafeDecoder) => Result<T>): Result<Array<T>> {
+  readArray<T>(fn: (decoder: SafeDecoder, i?: u32) => Result<T>): Result<Array<T>> {
     const result = this.readArraySize();
     if (result.isErr) {
       return Result.err<Array<T>>(result.unwrapErr());
@@ -626,16 +626,16 @@ export class SafeDecoder {
     const size = result.unwrap();
     let a = new Array<T>();
     for (let i: u32 = 0; i < size; i++) {
-      const itemResult = fn(this);
+      const itemResult = fn(this, i);
       if (itemResult.isErr) {
         return Result.err<Array<T>>(itemResult.unwrapErr());
       }
-      a.push(itemResult);
+      a.push(itemResult.unwrap());
     }
     return Result.ok<Array<T>>(a);
   }
 
-  readNullableArray<T>(fn: (decoder: SafeDecoder) => Result<T>): Result<Array<T> | null> {
+  readNullableArray<T>(fn: (decoder: SafeDecoder, i?: u32) => Result<T>): Result<Array<T> | null> {
     if (this.isNextNil()) {
       return Result.ok<Array<T> | null>(null);
     }
@@ -649,8 +649,8 @@ export class SafeDecoder {
   }
 
   readMap<K, V>(
-    keyFn: (decoder: SafeDecoder) => Result<K>,
-    valueFn: (decoder: SafeDecoder) => Result<V>
+    keyFn: (decoder: SafeDecoder, i?: u32) => Result<K>,
+    valueFn: (decoder: SafeDecoder, i?: u32) => Result<V>
   ): Result<Map<K, V>> {
     const result = this.readMapSize();
     if (result.isErr) {
@@ -660,22 +660,22 @@ export class SafeDecoder {
     const size = result.unwrap();
     let m = new Map<K, V>();
     for (let i: u32 = 0; i < size; i++) {
-      const keyResult = keyFn(this);
+      const keyResult = keyFn(this, i);
       if (keyResult.isErr) {
         return Result.err<Map<K, V>>(keyResult.unwrapErr());
       }
-      const valueResult = valueFn(this)
+      const valueResult = valueFn(this, i);
       if (valueResult.isErr) {
         return Result.err<Map<K, V>>(valueResult.unwrapErr());
       }
-      m.set(key, value);
+      m.set(keyResult.unwrap(), valueResult.unwrap());
     }
     return Result.ok<Map<K, V>>(m);
   }
 
   readNullableMap<K, V>(
-    keyFn: (decoder: SafeDecoder) => Result<K>,
-    valueFn: (decoder: SafeDecoder) => Result<V>
+    keyFn: (decoder: SafeDecoder, i?: u32) => Result<K>,
+    valueFn: (decoder: SafeDecoder, i?: u32) => Result<V>
   ): Result<Map<K, V> | null> {
     if (this.isNextNil()) {
       return Result.ok<Map<K, V> | null>(null);

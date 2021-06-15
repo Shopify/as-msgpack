@@ -83,18 +83,18 @@ class CodecTest {
       } else if (field == "bytes") {
         this.bytes = reader.readByteArray();
       } else if (field == "array") {
-        this.array = reader.readArray(
+        this.array = reader.readArray<u8>(
           (decoder: Decoder): u8 => {
             return decoder.readUInt8();
           }
         );
       } else if (field == "map") {
-        this.map = reader.readMap(
+        this.map = reader.readMap<string, Array<i32>>(
           (decoder: Decoder): string => {
             return decoder.readString();
           },
           (decoder: Decoder): Array<i32> => {
-            return decoder.readArray(
+            return decoder.readArray<i32>(
               (decoder: Decoder): i32 => {
                 return decoder.readInt32();
               }
@@ -102,18 +102,18 @@ class CodecTest {
           }
         );
       } else if (field == "nullableArray") {
-        this.nullableArray = reader.readNullableArray(
+        this.nullableArray = reader.readNullableArray<u8>(
           (decoder: Decoder): u8 => {
             return decoder.readUInt8();
           }
         );
       } else if (field == "nullableMap") {
-        this.nullableMap = reader.readNullableMap(
+        this.nullableMap = reader.readNullableMap<string, Array<i32>>(
           (decoder: Decoder): string => {
             return decoder.readString();
           },
           (decoder: Decoder): Array<i32> => {
-            return decoder.readArray(
+            return decoder.readArray<i32>(
               (decoder: Decoder): i32 => {
                 return decoder.readInt32();
               }

@@ -21,7 +21,7 @@ export class Result<T> {
     if (this.isOk) {
       return this.ok;
     }
-    throw this.err;
+    throw new Error(this.err.toString());
   }
 
   unwrapErr(): Error {
