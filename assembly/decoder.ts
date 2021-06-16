@@ -289,7 +289,7 @@ export class SafeDecoder {
     if (this.isFixedInt(prefix)) {
       return Result.ok<u64>(<u64>prefix);
     } else if (this.isNegativeFixedInt(prefix)) {
-      return Result.err<u64>(new Error("bad prefix for insigned int: prefix = 0x" + prefix.toString(16) + "; type = " + formatName(prefix)));
+      return Result.err<u64>(new Error("bad prefix for unsigned int: prefix = 0x" + prefix.toString(16) + "; type = " + formatName(prefix)));
     }
 
     switch (prefix) {
@@ -335,7 +335,7 @@ export class SafeDecoder {
           "integer underflow: value = " + value.toString() + "; type = u64"
         ));
       default:
-        return Result.err<u64>(new Error("bad prefix for insigned int: prefix = 0x" + prefix.toString(16) + "; type = " + formatName(prefix)));
+        return Result.err<u64>(new Error("bad prefix for unsigned int: prefix = 0x" + prefix.toString(16) + "; type = " + formatName(prefix)));
     }
   }
 
