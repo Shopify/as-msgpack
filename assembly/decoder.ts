@@ -1,5 +1,5 @@
 import { DataReader } from "./datareader";
-import { Format } from "./format";
+import { Format, formatName } from "./format";
 import { Result } from "./result";
 import { E_INVALIDLENGTH } from "util/error";
 
@@ -151,7 +151,7 @@ export class SafeDecoder {
     } else if (value == Format.FALSE) {
       return Result.ok<bool>(false);
     }
-    return Result.err<bool>(new Error("bad value for bool"));
+    return Result.err<bool>(new Error("bad value for bool: value = 0x" + value.toString(16) + "; type = " + formatName(value)));
   }
 
   readInt8(): Result<i8> {
@@ -165,7 +165,7 @@ export class SafeDecoder {
       return Result.ok<i8>(<i8>value);
     }
     return Result.err<i8>(new Error(
-      "interger overflow: value = " + value.toString() + "; bits = 8"
+      "integer overflow: value = " + value.toString() + "; bits = 8"
     ));
   }
 
@@ -180,7 +180,7 @@ export class SafeDecoder {
       return Result.ok<i16>(<i16>value);
     }
     return Result.err<i16>(new Error(
-      "interger overflow: value = " + value.toString() + "; bits = 16"
+      "integer overflow: value = " + value.toString() + "; bits = 16"
     ));
   }
 
@@ -195,7 +195,7 @@ export class SafeDecoder {
       return Result.ok<i32>(<i32>value);
     }
     return Result.err<i32>(new Error(
-      "interger overflow: value = " + value.toString() + "; bits = 32"
+      "integer overflow: value = " + value.toString() + "; bits = 32"
     ));
   }
 
@@ -230,11 +230,11 @@ export class SafeDecoder {
         }
 
         return Result.err<i64>(new Error(
-          "interger overflow: value = " + value.toString() + "; type = i64"
+          "integer overflow: value = " + value.toString() + "; type = i64"
         ));
       }
       default:
-        return Result.err<i64>(new Error("bad prefix for int"));
+        return Result.err<i64>(new Error("bad prefix for int: prefix = 0x" + prefix.toString(16) + "; type = " + formatName(prefix)));
     }
   }
 
@@ -249,7 +249,7 @@ export class SafeDecoder {
       return Result.ok<u8>(<u8>value);
     }
     return Result.err<u8>(new Error(
-      "unsigned interger overflow: value = " + value.toString() + "; bits = 8"
+      "unsigned integer overflow: value = " + value.toString() + "; bits = 8"
     ));
   }
 
@@ -264,7 +264,7 @@ export class SafeDecoder {
       return Result.ok<u16>(<u16>value);
     }
     return Result.err<u16>(new Error(
-      "unsigned interger overflow: value = " + value.toString() + "; bits = 16"
+      "unsigned integer overflow: value = " + value.toString() + "; bits = 16"
     ));
   }
 
@@ -279,7 +279,7 @@ export class SafeDecoder {
       return Result.ok<u32>(<u32>value);
     }
     return Result.err<u32>(new Error(
-      "unsigned interger overflow: value = " + value.toString() + "; bits = 32"
+      "unsigned integer overflow: value = " + value.toString() + "; bits = 32"
     ));
   }
 
@@ -289,7 +289,7 @@ export class SafeDecoder {
     if (this.isFixedInt(prefix)) {
       return Result.ok<u64>(<u64>prefix);
     } else if (this.isNegativeFixedInt(prefix)) {
-      return Result.err<u64>(new Error("bad prefix"));
+      return Result.err<u64>(new Error("bad prefix for unsigned int: prefix = 0x" + prefix.toString(16) + "; type = " + formatName(prefix)));
     }
 
     switch (prefix) {
@@ -307,7 +307,7 @@ export class SafeDecoder {
           return Result.ok<u64>(<u64>value);
         }
         return Result.err<u64>(new Error(
-          "interger underflow: value = " + value.toString() + "; type = u64"
+          "integer underflow: value = " + value.toString() + "; type = u64"
         ));
       }
       case Format.INT16:
@@ -316,7 +316,7 @@ export class SafeDecoder {
           return Result.ok<u64>(<u64>value);
         }
         return Result.err<u64>(new Error(
-          "interger underflow: value = " + value.toString() + "; type = u64"
+          "integer underflow: value = " + value.toString() + "; type = u64"
         ));
       case Format.INT32:
         const value = this.reader.getInt32();
@@ -324,7 +324,7 @@ export class SafeDecoder {
           return Result.ok<u64>(<u64>value);
         }
         return Result.err<u64>(new Error(
-          "interger underflow: value = " + value.toString() + "; type = u64"
+          "integer underflow: value = " + value.toString() + "; type = u64"
         ));
       case Format.INT64:
         const value = this.reader.getInt64();
@@ -332,10 +332,10 @@ export class SafeDecoder {
           return Result.ok<u64>(<u64>value);
         }
         return Result.err<u64>(new Error(
-          "interger underflow: value = " + value.toString() + "; type = u64"
+          "integer underflow: value = " + value.toString() + "; type = u64"
         ));
       default:
-        return Result.err<u64>(new Error("bad prefix for int"));
+        return Result.err<u64>(new Error("bad prefix for unsigned int: prefix = 0x" + prefix.toString(16) + "; type = " + formatName(prefix)));
     }
   }
 
@@ -357,7 +357,7 @@ export class SafeDecoder {
         return Result.ok<f32>(<f32>value);
       }
     } else {
-      return Result.err<f32>(new Error("bad prefix for float"));
+      return Result.err<f32>(new Error("bad prefix for float: prefix = 0x" + prefix.toString(16) + "; type = " + formatName(prefix)));
     }
   }
 
@@ -368,7 +368,7 @@ export class SafeDecoder {
     } else if (this.isFloat32(prefix)) {
       return Result.ok<f64>(<f64>this.reader.getFloat32());
     } else {
-      return Result.err<f64>(new Error("bad prefix for float"));
+      return Result.err<f64>(new Error("bad prefix for float: prefix = 0x" + prefix.toString(16) + "; type = " + formatName(prefix)));
     }
   }
 
@@ -399,8 +399,7 @@ export class SafeDecoder {
       case Format.STR32:
         return Result.ok<u32>(this.reader.getUint32());
     }
-
-    return Result.err<u32>(new RangeError(E_INVALIDLENGTH + leadByte.toString()));
+    return Result.err<u32>(new RangeError(E_INVALIDLENGTH + ": prefix = 0x" + leadByte.toString(16) + "; type = " + formatName(leadByte)));
   }
 
   readBinLength(): Result<u32> {
@@ -419,7 +418,7 @@ export class SafeDecoder {
       case Format.BIN32:
         return Result.ok<u32>(this.reader.getUint32());
     }
-    return Result.err<u32>(new RangeError(E_INVALIDLENGTH));
+    return Result.err<u32>(new RangeError(E_INVALIDLENGTH + ": prefix = 0x" + leadByte.toString(16) + "; type = " + formatName(leadByte)));
   }
 
   readByteArray(): Result<ArrayBuffer> {
@@ -444,7 +443,7 @@ export class SafeDecoder {
     } else if (leadByte == Format.NIL) {
       return Result.ok<u32>(0);
     }
-    return Result.err<u32>(new RangeError(E_INVALIDLENGTH + leadByte.toString()));
+    return Result.err<u32>(new RangeError(E_INVALIDLENGTH + ": prefix = 0x" + leadByte.toString(16) + "; type = " + formatName(leadByte)));
   }
 
   readMapSize(): Result<u32> {
@@ -456,7 +455,7 @@ export class SafeDecoder {
     } else if (leadByte == Format.MAP32) {
       return Result.ok<u32>(this.reader.getUint32());
     }
-    return Result.err<u32>(new RangeError(E_INVALIDLENGTH));
+    return Result.err<u32>(new RangeError(E_INVALIDLENGTH + ": prefix = 0x" + leadByte.toString(16) + "; type = " + formatName(leadByte)));
   }
 
   isFloat32(u: u8): bool {
